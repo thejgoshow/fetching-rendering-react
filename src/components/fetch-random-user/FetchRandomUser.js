@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import User from "../../components/user/User";
+import UserList from "../user-list/UserList";
 
 export default function FetchRandomUser({ update }) {
   // creating and setting state
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [users, setUsers] = useState();
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(false);
+  // const [users, setUsers] = useState();
+
+  const [localState, setLocalState] = useState({
+    loading: true,
+    error: false,
+    users: []
+  });
 
   useEffect(() => {
     loadData();
@@ -22,26 +29,34 @@ export default function FetchRandomUser({ update }) {
       })
       .catch((error) => console.log(error));
     const data = await response.json();
-    setLoading(false);
-    setUsers(data.results[0]);
-    console.log(data.results);
+
+    // setLoading(false);
+    // setUsers(data.results[0]);
+
+    setLocalState({ users: data.results });
+    //console.log(localState.users);
   };
 
   function handleErrors(response) {
     if (!response.ok) {
-      setError(true);
+      setLocalState({ error: true });
       throw Error(response.statusText);
     }
     return response;
   }
 
-  if (loading) {
+  if (localState.loading) {
     return <div>Loading...</div>;
   }
 
-  if (!users) {
+  if (localState.users.length < 1) {
     return <div>Something wrong, didn't get a user...</div>;
   }
-
-  return <User props={users} />;
+  return (
+    <>
+      <p>Total Users - {localState.users.length}</p>
+      <User props={localState.users[0]} />
+      <UserList props={localState} />
+    </>
+  );
 }
